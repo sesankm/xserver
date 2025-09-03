@@ -167,18 +167,11 @@ ProcXvMCListSurfaceTypes(ClientPtr client)
         }
     }
 
-    xvmcListSurfaceTypesReply reply = {
-        .type = X_Reply,
-        .sequenceNumber = client->sequence,
-        .num = num_surfaces,
-        .length = bytes_to_int32(sizeof(xvmcSurfaceInfo) * num_surfaces),
-    };
-
-    WriteToClient(client, sizeof(xvmcListSurfaceTypesReply), &reply);
-    WriteToClient(client, sizeof(xvmcSurfaceInfo) * num_surfaces, info);
-    free(info);
-
-    return Success;
+	xvmcListSurfaceTypesReply reply = { 0 };
+	x_rpcbuf_t rpcbuf = { .swapped = client->swapped, .err_clear = TRUE };
+	x_rpcbuf_write_CARD32s(&rpcbuf, info, bytes_to_int32(sizeof(xvmcSurfaceInfo) * num_surfaces));
+	free(info);
+	return X_SEND_REPLY_WITH_RPCBUF(client, reply, rpcbuf)
 }
 
 static int
