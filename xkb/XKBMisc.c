@@ -270,7 +270,7 @@ static XkbSymInterpretPtr
 _XkbFindMatchingInterp(XkbDescPtr xkb,
                        KeySym sym, unsigned int real_mods, unsigned int level)
 {
-    unsigned i;
+    unsigned int i;
     XkbSymInterpretPtr interp, rtrn;
     CARD8 mods;
 
@@ -334,9 +334,9 @@ _XkbAddKeyChange(KeyCode *pFirst, unsigned char *pNum, KeyCode newKey)
 }
 
 static void
-_XkbSetActionKeyMods(XkbDescPtr xkb, XkbAction *act, unsigned mods)
+_XkbSetActionKeyMods(XkbDescPtr xkb, XkbAction *act, unsigned int mods)
 {
-    unsigned tmp;
+    unsigned int tmp;
 
     switch (act->type) {
     case XkbSA_SetMods:
@@ -370,7 +370,7 @@ XkbApplyCompatMapToKey(XkbDescPtr xkb, KeyCode key, XkbChangesPtr changes)
     unsigned char explicit, mods;
     XkbSymInterpretPtr *interps, ibuf[IBUF_SIZE];
     int n, nSyms, found;
-    unsigned changed, tmp;
+    unsigned int changed, tmp;
 
     if ((!xkb) || (!xkb->map) || (!xkb->map->key_sym_map) ||
         (!xkb->compat) || (!xkb->compat->sym_interpret) ||
@@ -400,7 +400,7 @@ XkbApplyCompatMapToKey(XkbDescPtr xkb, KeyCode key, XkbChangesPtr changes)
     }
     found = 0;
     for (n = 0; n < nSyms; n++) {
-        unsigned level = (n % XkbKeyGroupsWidth(xkb, key));
+        unsigned int level = (n % XkbKeyGroupsWidth(xkb, key));
 
         interps[n] = NULL;
         if (syms[n] != NoSymbol) {
@@ -432,7 +432,7 @@ XkbApplyCompatMapToKey(XkbDescPtr xkb, KeyCode key, XkbChangesPtr changes)
         new_vmodmask = 0;
         for (n = 0; n < nSyms; n++) {
             if (interps[n]) {
-                unsigned effMods;
+                unsigned int effMods;
 
                 pActs[n] = *((XkbAction *) &interps[n]->act);
                 if ((n == 0) || ((interps[n]->match & XkbSI_LevelOneOnly) == 0)) {
@@ -526,7 +526,7 @@ Status
 XkbChangeTypesOfKey(XkbDescPtr xkb,
                     int key,
                     int nGroups,
-                    unsigned groups, int *newTypesIn, XkbMapChangesPtr changes)
+                    unsigned int groups, int *newTypesIn, XkbMapChangesPtr changes)
 {
     XkbKeyTypePtr pOldType, pNewType;
     int i;
@@ -651,10 +651,11 @@ XkbChangeTypesOfKey(XkbDescPtr xkb,
 /***====================================================================***/
 
 Bool
-XkbVirtualModsToReal(XkbDescPtr xkb, unsigned virtual_mask, unsigned *mask_rtrn)
+XkbVirtualModsToReal(XkbDescPtr xkb,
+                     unsigned int virtual_mask, unsigned int *mask_rtrn)
 {
     int i, bit;
-    unsigned mask;
+    unsigned int mask;
 
     if ((xkb == NULL) || (xkb->server == NULL)) {
         *mask_rtrn = 0;
@@ -675,7 +676,7 @@ XkbVirtualModsToReal(XkbDescPtr xkb, unsigned virtual_mask, unsigned *mask_rtrn)
 /***====================================================================***/
 
 static Bool
-XkbUpdateActionVirtualMods(XkbDescPtr xkb, XkbAction *act, unsigned changed)
+XkbUpdateActionVirtualMods(XkbDescPtr xkb, XkbAction *act, unsigned int changed)
 {
     unsigned int tmp;
 
@@ -755,7 +756,7 @@ XkbUpdateKeyTypeVirtualMods(XkbDescPtr xkb,
 }
 
 Bool
-XkbApplyVirtualModChanges(XkbDescPtr xkb, unsigned changed,
+XkbApplyVirtualModChanges(XkbDescPtr xkb, unsigned int changed,
                           XkbChangesPtr changes)
 {
     int i;
