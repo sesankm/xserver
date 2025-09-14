@@ -270,39 +270,35 @@ static XkbSymInterpretPtr
 _XkbFindMatchingInterp(XkbDescPtr xkb,
                        KeySym sym, unsigned int real_mods, unsigned int level)
 {
-    register unsigned i;
-    XkbSymInterpretPtr interp, rtrn;
-    CARD8 mods;
+    XkbSymInterpretPtr rtrn = NULL,
+                       interp = xkb->compat->sym_interpret;
 
-    rtrn = NULL;
-    interp = xkb->compat->sym_interpret;
-    for (i = 0; i < xkb->compat->num_si; i++, interp++) {
+    for (unsigned int i = 0; i < xkb->compat->num_si; i++, interp++) {
         if ((interp->sym == NoSymbol) || (sym == interp->sym)) {
             int match;
+            CARD8 mods = 0;
 
             if ((level == 0) || ((interp->match & XkbSI_LevelOneOnly) == 0))
                 mods = real_mods;
-            else
-                mods = 0;
             switch (interp->match & XkbSI_OpMask) {
-            case XkbSI_NoneOf:
-                match = ((interp->mods & mods) == 0);
-                break;
-            case XkbSI_AnyOfOrNone:
-                match = ((mods == 0) || ((interp->mods & mods) != 0));
-                break;
-            case XkbSI_AnyOf:
-                match = ((interp->mods & mods) != 0);
-                break;
-            case XkbSI_AllOf:
-                match = ((interp->mods & mods) == interp->mods);
-                break;
-            case XkbSI_Exactly:
-                match = (interp->mods == mods);
-                break;
-            default:
-                match = 0;
-                break;
+                case XkbSI_NoneOf:
+                    match = ((interp->mods & mods) == 0);
+                    break;
+                case XkbSI_AnyOfOrNone:
+                    match = ((mods == 0) || ((interp->mods & mods) != 0));
+                    break;
+                case XkbSI_AnyOf:
+                    match = ((interp->mods & mods) != 0);
+                    break;
+                case XkbSI_AllOf:
+                    match = ((interp->mods & mods) == interp->mods);
+                    break;
+                case XkbSI_Exactly:
+                    match = (interp->mods == mods);
+                    break;
+                default:
+                    match = 0;
+                    break;
             }
             if (match) {
                 if (interp->sym != NoSymbol) {
@@ -320,9 +316,7 @@ _XkbFindMatchingInterp(XkbDescPtr xkb,
 static void
 _XkbAddKeyChange(KeyCode *pFirst, unsigned char *pNum, KeyCode newKey)
 {
-    KeyCode last;
-
-    last = (*pFirst) + (*pNum);
+    KeyCode last = (*pFirst) + (*pNum);
     if (newKey < *pFirst) {
         *pFirst = newKey;
         *pNum = (last - newKey) + 1;
@@ -529,8 +523,7 @@ XkbChangeTypesOfKey(XkbDescPtr xkb,
                     unsigned groups, int *newTypesIn, XkbMapChangesPtr changes)
 {
     XkbKeyTypePtr pOldType, pNewType;
-    register int i;
-    int width, nOldGroups, oldWidth, newTypes[XkbNumKbdGroups];
+    int i, width;
 
     if ((!xkb) || (!XkbKeycodeInRange(xkb, key)) || (!xkb->map) ||
         (!xkb->map->types) || (!newTypesIn) ||
@@ -549,8 +542,10 @@ XkbChangeTypesOfKey(XkbDescPtr xkb,
         return Success;
     }
 
-    nOldGroups = XkbKeyNumGroups(xkb, key);
-    oldWidth = XkbKeyGroupsWidth(xkb, key);
+    int nOldGroups = XkbKeyNumGroups(xkb, key);
+    int oldWidth = XkbKeyGroupsWidth(xkb, key);
+    int newTypes[XkbNumKbdGroups];
+
     for (width = i = 0; i < nGroups; i++) {
         if (groups & (1 << i))
             newTypes[i] = newTypesIn[i];
@@ -570,7 +565,6 @@ XkbChangeTypesOfKey(XkbDescPtr xkb,
         xkb->ctrls->num_groups = nGroups;
     if ((width != oldWidth) || (nGroups != nOldGroups)) {
         KeySym oldSyms[XkbMaxSymsPerKey], *pSyms;
-        int nCopy;
 
         if (nOldGroups == 0) {
             pSyms = XkbResizeKeySyms(xkb, key, width * nGroups);
@@ -592,6 +586,8 @@ XkbChangeTypesOfKey(XkbDescPtr xkb,
         if (pSyms == NULL)
             return BadAlloc;
         memset(pSyms, 0, width * nGroups * sizeof(KeySym));
+
+        int nCopy;
         for (i = 0; (i < nGroups) && (i < nOldGroups); i++) {
             pOldType = XkbKeyKeyType(xkb, key, i);
             pNewType = &xkb->map->types[newTypes[i]];
@@ -603,9 +599,9 @@ XkbChangeTypesOfKey(XkbDescPtr xkb,
                    nCopy * sizeof(KeySym));
         }
         if (XkbKeyHasActions(xkb, key)) {
-            XkbAction oldActs[XkbMaxSymsPerKey], *pActs;
+            XkbAction oldActs[XkbMaxSymsPerKey];
+            XkbAction *pActs = XkbKeyActionsPtr(xkb, key);
 
-            pActs = XkbKeyActionsPtr(xkb, key);
             memcpy(oldActs, pActs, XkbKeyNumSyms(xkb, key) * sizeof(XkbAction));
             pActs = XkbResizeKeyActions(xkb, key, width * nGroups);
             if (pActs == NULL)
